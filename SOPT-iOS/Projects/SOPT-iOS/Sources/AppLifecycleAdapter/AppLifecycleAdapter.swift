@@ -1,8 +1,8 @@
 //
-//  AppLifecycleAdapter.swift
-//  BaseFeatureDependency
+//  AppLifecycleListener.swift
+//  SOPT-iOS
 //
-//  Created by Ian on 12/2/23.
+//  Created by Ian on 12/3/23.
 //  Copyright © 2023 SOPT-iOS. All rights reserved.
 //
 
@@ -12,43 +12,42 @@ import Networks
 import UIKit
 
 final public class AppLifecycleAdapter {
-    private let authService: AuthService
     private let cancelBag = CancelBag()
+    
+    // MARK: Listeners
+    private var appLifecycleListeners: [any AppLifecycleListenable] = []
 
     public init() {
-        self.authService = DefaultAuthService()
+        self.prepare()
     }
 }
 
 // MARK: - Public functions
 extension AppLifecycleAdapter {
-    public func prepare() {
-        self.onWillEnterForeground()
-        self.onWillEnterBackground()
+    public func start() {
+        self.appLifecycleListeners = [NetworkAppLifecycleListener()]
+        
+        self.appLifecycleListeners.forEach { $0.register() }
     }
 }
 
-// MARK: - Lifecycle Usecases
+// MARK: - Private functions
 extension AppLifecycleAdapter {
+    private func prepare() {
+        self.onWillEnterForeground()
+        self.onWillEnterBackground()
+    }
+
+    //MARK: - Usecases
     private func onWillEnterForeground() {
         NotificationCenter.default
             .publisher(for: UIApplication.willEnterForegroundNotification)
             .subscribe(on: DispatchQueue.global())
             .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { [weak self] _ in
-                self?.reissureTokens()
+            .sink(receiveValue: { _ in
+                NotificationCenter.default.post(name: .SOPT.willEnterForeground, object: nil)
             }).store(in: self.cancelBag)
     }
 
     private func onWillEnterBackground() { }
 }
-
-// MARK: - Private functions
-extension AppLifecycleAdapter {
-    private func reissureTokens() {
-        guard UserDefaultKeyList.Auth.appAccessToken != nil else { return }
-
-        self.authService.reissuance { _  in }
-    }
-}
-
