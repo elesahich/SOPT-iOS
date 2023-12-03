@@ -64,7 +64,7 @@ extension AppDelegate {
     }
     
     private func configureAppLifecycleAdapter() {
-        self.appLifecycleAdapter.start()
+        self.appLifecycleAdapter.prepare()
     }
 }
 

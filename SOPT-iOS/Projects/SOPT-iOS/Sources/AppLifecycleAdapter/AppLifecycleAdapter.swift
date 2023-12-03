@@ -1,5 +1,5 @@
 //
-//  AppLifecycleListener.swift
+//  AppLifecycleAdapter.swift
 //  SOPT-iOS
 //
 //  Created by Ian on 12/3/23.
@@ -13,27 +13,12 @@ import UIKit
 
 final public class AppLifecycleAdapter {
     private let cancelBag = CancelBag()
-    
-    // MARK: Listeners
-    private var appLifecycleListeners: [any AppLifecycleListenable] = []
-
-    public init() {
-        self.prepare()
-    }
-}
-
-// MARK: - Public functions
-extension AppLifecycleAdapter {
-    public func start() {
-        self.appLifecycleListeners = [NetworkAppLifecycleListener()]
-        
-        self.appLifecycleListeners.forEach { $0.register() }
-    }
+    private let authService = DefaultAuthService()
 }
 
 // MARK: - Private functions
 extension AppLifecycleAdapter {
-    private func prepare() {
+    public func prepare() {
         self.onWillEnterForeground()
         self.onWillEnterBackground()
     }
@@ -44,10 +29,19 @@ extension AppLifecycleAdapter {
             .publisher(for: UIApplication.willEnterForegroundNotification)
             .subscribe(on: DispatchQueue.global())
             .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { _ in
-                NotificationCenter.default.post(name: .SOPT.willEnterForeground, object: nil)
+            .sink(receiveValue: { [weak self] _ in
+                self?.reissureTokens()
             }).store(in: self.cancelBag)
     }
-
+    
     private func onWillEnterBackground() { }
+}
+
+// MARK: - Private functions
+extension AppLifecycleAdapter {
+    private func reissureTokens() {
+        guard UserDefaultKeyList.Auth.appAccessToken != nil else { return }
+        
+        self.authService.reissuance { _  in }
+    }
 }
