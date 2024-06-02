@@ -11,7 +11,7 @@ import Combine
 import Core
 
 public protocol PokeOnboardingUsecase {
-  func getRandomAcquaintances()
+  func getRandomAcquaintances(randomUserType: PokeRandomUserType)
   func poke(userId: Int, message: PokeMessageModel)
   
   var randomAcquaintances: PassthroughSubject<[PokeUserModel], Never> { get }
@@ -33,9 +33,9 @@ public final class DefaultPokeOnboardingUsecase {
 }
 
 extension DefaultPokeOnboardingUsecase: PokeOnboardingUsecase {
-  public func getRandomAcquaintances() {
+  public func getRandomAcquaintances(randomUserType: PokeRandomUserType) {
     self.repository
-      .getRandomAcquaintances(randomUserType: .all, size: PokeRandomUserQueryCount.onboardingPage)
+      .getRandomAcquaintances(randomUserType: randomUserType, size: PokeRandomUserQueryCount.onboardingPage)
       .sink(
         receiveCompletion: { _ in },
         receiveValue: { [weak self] value in
