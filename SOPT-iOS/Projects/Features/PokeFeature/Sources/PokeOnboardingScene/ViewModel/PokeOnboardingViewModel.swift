@@ -23,7 +23,7 @@ public final class PokeOnboardingViewModel: PokeOnboardingViewModelType {
   }
   
   public struct Output {
-    let randomAcquaintance = PassthroughSubject<[PokeUserModel], Never>()
+    let randomAcquaintance = PassthroughSubject<[PokeRandomUserInfoModel], Never>()
     let pokedResult = PassthroughSubject<PokeUserModel, Never>()
   }
   
