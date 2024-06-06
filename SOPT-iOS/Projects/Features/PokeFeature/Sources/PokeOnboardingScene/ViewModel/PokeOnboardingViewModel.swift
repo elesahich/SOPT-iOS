@@ -16,7 +16,7 @@ import PokeFeatureInterface
 public final class PokeOnboardingViewModel: PokeOnboardingViewModelType {
   public struct Input {
     let viewDidLoaded: Driver<Void>
-    let pullToRefreshTriggered: Driver<Void>
+    let pullToRefreshTriggered: Driver<PokeRandomUserType>
     let pokeButtonTapped: Driver<PokeUserModel>
     let avatarTapped: Driver<PokeUserModel>
     let messageCommandClicked: Driver<PokeMessageModel>
@@ -84,8 +84,8 @@ extension PokeOnboardingViewModel {
     
     input.pullToRefreshTriggered
       .withUnretained(self)
-      .sink(receiveValue: { [weak self] _ in
-        self?.usecase.getRandomAcquaintances(randomUserType: .all)
+      .sink(receiveValue: { [weak self] owner, randomType in
+        self?.usecase.getRandomAcquaintances(randomUserType: randomType)
       }).store(in: cancelBag)
     
     return output
