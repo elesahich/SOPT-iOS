@@ -30,7 +30,7 @@ public final class PokeOnboardingViewModel: PokeOnboardingViewModelType {
   public var onNaviBackTapped: (() -> Void)?
   public var onFirstVisitInOnboarding: (() -> Void)?
   public var onAvartarTapped: ((_ playgroundId: String) -> Void)?
-  public var onPokeButtonTapped: ((PokeUserModel) -> Driver<(PokeUserModel, PokeMessageModel)>)?
+  public var onPokeButtonTapped: ((PokeUserModel) -> Driver<(PokeUserModel, PokeMessageModel, isAnonymous: Bool)>)?
   public var onMyFriendsTapped: (() -> Void)?
   
   // MARK: Privates
@@ -66,14 +66,14 @@ extension PokeOnboardingViewModel {
       }).store(in: cancelBag)
     
     input.pokeButtonTapped
-      .flatMap { [weak self] userModel -> Driver<(PokeUserModel, PokeMessageModel)> in
+      .flatMap { [weak self] userModel -> Driver<(PokeUserModel, PokeMessageModel, isAnonymous: Bool)> in
         guard let self, let value = self.onPokeButtonTapped?(userModel) else { return .empty() }
         
         return value
       }
-      .sink(receiveValue: { [weak self] userModel, messageModel in
+      .sink(receiveValue: { [weak self] userModel, messageModel, isAnonymous in
         self?.eventTracker.trackClickPokeEvent(clickView: .onboarding, playgroundId: userModel.playgroundId)
-        self?.usecase.poke(userId: userModel.userId, message: messageModel)
+        self?.usecase.poke(userId: userModel.userId, message: messageModel, isAnonymous: isAnonymous)
       }).store(in: cancelBag)
     
     input.avatarTapped

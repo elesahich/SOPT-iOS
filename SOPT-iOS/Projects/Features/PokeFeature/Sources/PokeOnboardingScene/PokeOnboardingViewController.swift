@@ -296,7 +296,6 @@ extension PokeOnboardingViewController {
       .pokedResult
       .sink(receiveValue: { [weak self] pokedResult in
         
-        
 //        self?.update(with: pokedResult)
       }).store(in: self.cancelBag)
   }
